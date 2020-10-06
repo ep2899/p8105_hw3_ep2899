@@ -8,6 +8,26 @@ editor_options:
 ```{r setup}
 library(tidyverse)
 library(p8105.datasets)
+
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = 0.6,
+  out.width= "90%"
+)
+
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+          
+
+options(
+    ggplot2.continuous.colour= "viridis" ,
+    ggplot2.continuous.fill = "viridis"
+)        
+
+
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
 
 ###Problem 0
@@ -64,6 +84,60 @@ Apples vs ice cream..
 instacart %>% 
   filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
   group_by(product_name, order_dow) %>% 
-  summarize(mean_hour = mean(order_hour_of_day))
+  summarize(mean_hour = mean(order_hour_of_day)) 
 ```
 
+##Problem 2
+Load, Tidy, Wrangle Data
+```{r}
+accel_df=
+ read_csv("./data/accel_data.csv") %>% 
+  pivot_longer(
+    activity.1:activity.1440, 
+    names_to = "minute", 
+    names_prefix = "activity.",
+    values_to = "activity_counts"
+  ) %>% 
+  mutate(
+    day= recode(day, Monday = "Weekday", Tuesday = "Weekday" , Wednesday = "Weekday" , Thursday = "Weekday" , Friday= "Weekday",                 Saturday = "Weekend", Sunday = "Weekend")
+  )
+```
+
+```{r}
+accel_df %>% 
+    mutate(minute = as.numeric(minute)) %>% 
+  count(minute)
+```
+Describe dataset: This accel_df contains 4 different numeric variables (week, day_id, minute of day, and activity counts) and 1 character variable (day). There are a total of 1,440 separate minute of day observations.
+
+Aggregate across minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+```{r}
+accel_df %>% 
+group_by(day, day_id) %>% 
+  summarize(activity_sum = sum(activity_counts)) %>% 
+   mutate(rank = min_rank(desc(day_id))) %>% 
+  arrange(day_id, rank) %>% 
+  knitr::kable()
+```
+
+Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+
+
+
+
+
+
+
+
+
+##Problem 3
+year-month=day, separate function to get 3 variables, convert to month descriptor but not required
+reasonable units for temperature- NOAA description? 10th of degree C, just degree C
+most commonly observed values?
+average max T in Jan, July each station/yrs, group by (station, year, month) and summarize (avg max T)
+avg max T over years separately for each station
+FACET for 2 panel plots
+is Jan warmer in 2010 vs 1980?
+tmax vs tmin (contour or bin or hex)
++ distribution of snowfall values, filter first then, box, violin, ridge to demonstrate distribution
+via patchwork
