@@ -31,7 +31,7 @@ scale_fill_discrete = scale_fill_viridis_d
 ```
 
 ###Problem 0
-
+This “problem” focuses on structure of your submission, especially the use git and GitHub for reproducibility, R Projects to organize your work, R Markdown to write reproducible reports, relative paths to load data from local files, and reasonable naming structures for your files.
 
 ### Problem 1
 ```{r}
@@ -84,7 +84,11 @@ Apples vs ice cream..
 instacart %>% 
   filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
   group_by(product_name, order_dow) %>% 
-  summarize(mean_hour = mean(order_hour_of_day)) 
+  summarize(mean_hour=mean(order_hour_of_day)) %>% 
+  pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour
+  )
 ```
 
 ##Problem 2
@@ -99,7 +103,7 @@ accel_df=
     values_to = "activity_counts"
   ) %>% 
   mutate(
-    day= recode(day, Monday = "Weekday", Tuesday = "Weekday" , Wednesday = "Weekday" , Thursday = "Weekday" , Friday= "Weekday",                 Saturday = "Weekend", Sunday = "Weekend")
+    day= recode(day, Monday = "Weekday", Tuesday = "Weekday" , Wednesday = "Weekday" , Thursday = "Weekday" , Friday= "Weekday",  Saturday = "Weekend", Sunday = "Weekend")
   )
 ```
 
@@ -111,6 +115,8 @@ accel_df %>%
 Describe dataset: This accel_df contains 4 different numeric variables (week, day_id, minute of day, and activity counts) and 1 character variable (day). There are a total of 1,440 separate minute of day observations.
 
 Aggregate across minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+Highest sum activity was recorded on the 35th weekday and 32nd weekend.
+
 ```{r}
 accel_df %>% 
 group_by(day, day_id) %>% 
@@ -120,24 +126,65 @@ group_by(day, day_id) %>%
   knitr::kable()
 ```
 
+
 Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
-
-
-
-
-
-
-
+```{r}
+accel_df %>% 
+ggplot(aes(x = minute, y = activity_counts, color = day))+
+  geom_line()
+```
+Activity counts appear to peak during certain minute windows of the day (with weekdays peaking more than weekends).
 
 
 ##Problem 3
-year-month=day, separate function to get 3 variables, convert to month descriptor but not required
-reasonable units for temperature- NOAA description? 10th of degree C, just degree C
-most commonly observed values?
-average max T in Jan, July each station/yrs, group by (station, year, month) and summarize (avg max T)
-avg max T over years separately for each station
-FACET for 2 panel plots
-is Jan warmer in 2010 vs 1980?
-tmax vs tmin (contour or bin or hex)
-+ distribution of snowfall values, filter first then, box, violin, ridge to demonstrate distribution
-via patchwork
+```{r}
+library(p8105.datasets)
+data("ny_noaa")
+```
+Write a short description of the dataset, noting the size and structure of the data, describing some key variables, and indicating the extent to which missing data is an issue
+
+This dataset consists of 7 columns and 2,595, 176 rows. Observations are listed by weather station ID and chronologically by date. Numeric variables include precipitation in tenths of mm, snowfall in mm, snow depth in mm. Character variables include maximum and minimum temperature in tenths of degrees C. Due to the fact that each weather station can only collect parts of this information, there is substantial missing data.
+
+Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units. For snowfall, what are the most commonly observed values? Why?
+
+```{r}
+ny_noaa_df=
+separate(ny_noaa, date, into = c("year", "month" , "day" ))
+```
+
+```{r}
+ny_noaa_df %>%   
+mutate(
+    tmin = as.numeric(tmin),
+    tmax = as.numeric(tmax),
+    tmin = tmin/10,
+    tmax= tmax/10
+  )
+```
+
+```{r}
+ny_noaa_df %>% 
+   group_by(snow) %>% 
+  summarize(
+    n_obs =n()
+    ) %>% 
+  mutate(rank = min_rank(desc(n_obs))) %>%
+   arrange(n_obs, rank) %>% 
+  filter(rank<3)
+```
+For snowfall, the most commonly observed value is "0" mm
+
+Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable/interpretable structure? Any outliers?
+```{r}
+ ny_noaa_df %>% 
+  filter(month %in% c("01", "07")) %>% 
+   group_by(id, year, month) %>% 
+  summarize(
+    mean_tmax=mean(tmax, na.rm =TRUE))
+```
+
+Make a two-panel plot showing tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+```{r}
+ny_noaa_df
+```
+
