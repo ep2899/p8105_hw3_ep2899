@@ -176,15 +176,46 @@ For snowfall, the most commonly observed value is "0" mm
 
 Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable/interpretable structure? Any outliers?
 ```{r}
- ny_noaa_df %>% 
+ ny_noaa_df = 
+  mutate(ny_noaa_df,
+    tmin = as.numeric(tmin),
+    tmax = as.numeric(tmax),
+    tmin = tmin/10,
+    tmax= tmax/10
+  ) 
+```
+
+```{r}
+ny_noaa_df %>% 
   filter(month %in% c("01", "07")) %>% 
    group_by(id, year, month) %>% 
   summarize(
-    mean_tmax=mean(tmax, na.rm =TRUE))
+    mean_tmax=mean(tmax, na.rm =TRUE)) %>% 
+  ggplot(aes(x=year, y= mean_tmax, group= id, color = id)) +
+  geom_point() +
+  geom_path()+
+   facet_grid(.  ~month)
 ```
 
-Make a two-panel plot showing tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+
+Make a two-panel plot showing tmax vs tmin for the full dataset (note that a scatterplot may not be the best option)
 ```{r}
-ny_noaa_df
+
+```
+
+make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year
+```{r}
+  filter(ny_noaa_df, snow > 0, snow <= 100)
+```
+
+```{r}
+library(ggridges)
+```
+
+```{r}
+   ny_noaa_df %>% 
+   ggplot(aes(x = year, y = snow, fill=year))+
+   geom_violin(alpha = 0.5)+
+   stat_summary(fun = "median")
 ```
 
