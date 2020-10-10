@@ -4,7 +4,6 @@ output: github_document
 editor_options: 
   chunk_output_type: console
 ---
-
 ```{r setup}
 library(tidyverse)
 library(p8105.datasets)
@@ -153,16 +152,6 @@ separate(ny_noaa, date, into = c("year", "month" , "day" ))
 ```
 
 ```{r}
-ny_noaa_df %>%   
-mutate(
-    tmin = as.numeric(tmin),
-    tmax = as.numeric(tmax),
-    tmin = tmin/10,
-    tmax= tmax/10
-  )
-```
-
-```{r}
 ny_noaa_df %>% 
    group_by(snow) %>% 
   summarize(
@@ -198,24 +187,20 @@ ny_noaa_df %>%
 ```
 
 
-Make a two-panel plot showing tmax vs tmin for the full dataset (note that a scatterplot may not be the best option)
+Make a two-panel plot showing tmax vs tmin for the full dataset (note that a scatterplot may not be the best option). Make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year
 ```{r}
-
+tmax_tmin_p=
+ny_noaa_df %>% 
+ggplot(aes(x = tmax, y = tmin, color = id))+
+theme_bw()+
+geom_point(alpha=0.1, col= "red")+
+ggtitle("Contour Plot Tmax v T min")
+theme(plot.title= element_text(hjust = 0.5))+
+labs(x = "tmax" , y = "tmin")
 ```
 
-make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year
-```{r}
-  filter(ny_noaa_df, snow > 0, snow <= 100)
-```
 
-```{r}
-library(ggridges)
-```
 
-```{r}
-   ny_noaa_df %>% 
-   ggplot(aes(x = year, y = snow, fill=year))+
-   geom_violin(alpha = 0.5)+
-   stat_summary(fun = "median")
-```
+
+
 
