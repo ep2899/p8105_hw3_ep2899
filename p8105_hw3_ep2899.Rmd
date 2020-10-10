@@ -199,7 +199,17 @@ theme(plot.title= element_text(hjust = 0.5))+
 labs(x = "tmax" , y = "tmin")
 ```
 
+```{r}
+filter(ny_noaa_df, snow > 0, snow <= 100)
+```
 
+```{r}
+snsnowfall_p=
+  ny_noaa_df %>% 
+   ggplot(aes(x = year, y = snow, fill=year))+
+   geom_violin(alpha = 0.5)+
+   stat_summary(fun = "median")
+```
 
 
 
